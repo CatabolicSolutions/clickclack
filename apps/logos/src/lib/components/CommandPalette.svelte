@@ -98,7 +98,7 @@
     align-content: start;
     justify-items: center;
     padding: 80px var(--space-4) 0;
-    background: rgba(8, 10, 14, 0.8);
+    background: rgba(0, 0, 0, 0.92);
   }
   .palette-bar {
     display: flex;
@@ -106,10 +106,8 @@
     gap: var(--space-2);
     width: min(760px, 100%);
     padding: 14px 16px;
-    border: 1px solid color-mix(in srgb, var(--line-strong) 78%, transparent);
-    border-radius: var(--radius-xl);
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
-    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--line-strong);
+    background: var(--panel-raised);
   }
   .prompt {
     color: var(--accent-thread);
@@ -128,12 +126,10 @@
     width: min(760px, 100%);
     margin-top: var(--space-2);
     padding: 10px 14px;
-    border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel) 88%, transparent);
+    border: 1px solid var(--line);
+    background: var(--panel);
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--accent-verified);
-    box-shadow: var(--shadow-sm);
   }
 </style>

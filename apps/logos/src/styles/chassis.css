@@ -1,6 +1,7 @@
-/* PROJECT LOGOS — Chassis
-   Phase D keeps the operator shell and dense layout, but softens the frame,
-   adds layering, and restores breathing room between surfaces. */
+/* PROJECT LOGOS — Chassis (§8 monochrome, restored 2026-08-09)
+   Pure black, 1px charcoal borders, 2px functional accents, 0px radius.
+   Zero gradients, glass, blur, glow, or shadows.
+   Fixed tiled grid: panels tile flush along rigid grid lines. */
 
 html,
 body {
@@ -22,7 +23,7 @@ body {
   grid-template-columns: 48px minmax(0, 1fr) 0px;
   grid-template-rows: 100vh;
   background: var(--bg);
-  padding: var(--space-3);
+  padding: 0;
   transition: grid-template-columns var(--motion-med);
 }
 
@@ -40,10 +41,8 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
-  border: 1px solid color-mix(in srgb, var(--line-strong) 68%, transparent);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--panel) 88%, transparent);
-  box-shadow: var(--shadow-md);
+  border-left: 1px solid var(--line);
+  background: var(--bg);
   overflow: hidden;
   position: relative;
   min-width: 0;
@@ -63,7 +62,7 @@ body {
 .accent-intent { color: var(--accent-intent); }
 .accent-thread { color: var(--accent-thread); }
 
-/* Inspect mode: text 60% opacity, dashed association lines */
+/* Inspect mode: text 60% opacity, 1px dashed association lines (§8.5) */
 .logos-shell.inspect .logos-main {
   opacity: 0.7;
 }
@@ -71,14 +70,13 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   pointer-events: none;
   background-image: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 7px,
-    rgba(0, 136, 255, 0.10) 7px,
-    rgba(0, 136, 255, 0.10) 8px
+    transparent 15px,
+    rgba(0, 136, 255, 0.14) 15px,
+    rgba(0, 136, 255, 0.14) 16px
   );
 }
 

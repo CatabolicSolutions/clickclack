@@ -208,8 +208,7 @@
     grid-template-rows: auto minmax(0, 1fr);
     border: 1px solid var(--line-strong);
     border-top: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    background: var(--panel);
     font-family: var(--font-body);
     font-size: 10px;
     line-height: 1.45;
@@ -232,7 +231,7 @@
     align-items: center;
     gap: 6px;
     border-bottom: 1px solid var(--line);
-    background: color-mix(in srgb, var(--panel-3) 84%, transparent);
+    background: var(--panel-3);
     padding: 8px 10px;
     flex-wrap: wrap;
   }
@@ -241,8 +240,7 @@
     min-height: 30px;
     padding: 0 10px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-2) 84%, transparent);
+    background: var(--panel-2);
     color: var(--muted-2);
     font-family: var(--font-ui);
     font-size: 9px;
@@ -259,12 +257,13 @@
   }
 
   .inspector-tab.active {
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
+    background: var(--panel-raised);
     color: var(--text-strong);
-    border-color: color-mix(in srgb, var(--accent-thread) 38%, var(--line-strong));
+    border-color: var(--accent-thread);
   }
 
   .inspector-tab:focus-visible {
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
@@ -275,8 +274,7 @@
     width: 32px;
     height: 32px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-2) 84%, transparent);
+    background: var(--panel-2);
     color: var(--muted);
     cursor: pointer;
     flex-shrink: 0;
@@ -309,13 +307,12 @@
     grid-template-columns: 130px 1fr;
     gap: 10px;
     padding: 10px 12px;
-    border: 1px solid color-mix(in srgb, var(--line) 68%, transparent);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 86%, transparent);
+    border: 1px solid var(--line);
+    background: var(--panel-2);
   }
 
   .inspect-row:last-child {
-    border-bottom: 1px solid color-mix(in srgb, var(--line) 68%, transparent);
+    border-bottom: 1px solid var(--line);
   }
 
   .inspect-label {
@@ -347,8 +344,7 @@
     gap: 8px;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 86%, transparent);
+    background: var(--panel-2);
   }
 
   .node-marker {
@@ -386,8 +382,7 @@
     margin: 0;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 86%, transparent);
+    background: var(--panel-2);
     color: var(--text);
     font-family: var(--font-mono);
     font-size: 9.5px;
@@ -410,8 +405,7 @@
     gap: 8px;
     padding: 10px 12px;
     border-left: 2px solid var(--line);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 80%, transparent);
+    background: var(--panel-2);
     font-size: 10px;
   }
 

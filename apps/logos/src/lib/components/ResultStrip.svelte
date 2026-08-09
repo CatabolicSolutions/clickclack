@@ -90,13 +90,11 @@
   .result-strip {
     border: 1px solid var(--line-strong);
     border-top: none;
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    background: var(--panel);
     font-family: var(--font-body);
     font-size: 11px;
     line-height: 1.6;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
   }
 
   .result-body {
@@ -116,7 +114,7 @@
     gap: 8px;
     padding: 8px 12px 10px;
     border-top: 1px solid var(--line);
-    background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+    background: var(--panel-2);
     font-size: 9px;
     letter-spacing: 0.04em;
   }
@@ -139,8 +137,7 @@
     min-height: 30px;
     padding: 0 10px;
     border: 1px solid var(--line-strong);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-3) 82%, transparent);
+    background: var(--panel-3);
     color: var(--text);
     font-family: var(--font-ui);
     font-size: 10px;
@@ -153,18 +150,17 @@
   .result-apply {
     border-color: var(--accent-thread);
     color: var(--accent-thread);
-    background: color-mix(in srgb, var(--accent-thread) 10%, transparent);
+    background: transparent;
   }
 
   .result-apply:hover {
-    background: color-mix(in srgb, var(--accent-thread) 24%, transparent);
+    background: var(--hover-strong);
     color: var(--text-strong);
   }
 
   .result-btn:hover {
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
+    background: var(--hover-strong);
     color: var(--text-strong);
-    box-shadow: var(--shadow-sm);
   }
 
   .result-dismiss:hover {

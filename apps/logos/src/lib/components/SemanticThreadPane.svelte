@@ -295,7 +295,7 @@
     grid-template-rows: auto minmax(0, 1fr);
     min-width: 0;
     overflow: hidden;
-    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    background: var(--panel);
     font-family: var(--font-body);
     font-size: 10px;
     line-height: 1.45;
@@ -307,7 +307,7 @@
     align-items: center;
     gap: 6px;
     border-bottom: 1px solid var(--line);
-    background: color-mix(in srgb, var(--panel-2) 88%, transparent);
+    background: var(--panel-2);
     padding: 10px 12px;
     flex-wrap: wrap;
   }
@@ -316,8 +316,7 @@
     min-height: 32px;
     padding: 0 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-3) 84%, transparent);
+    background: var(--panel-3);
     color: var(--muted-2);
     font-family: var(--font-ui);
     font-size: 10px;
@@ -334,9 +333,9 @@
   }
 
   .logos-pane-tab.active {
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
+    background: var(--panel-raised);
     color: var(--text-strong);
-    border-color: color-mix(in srgb, var(--accent-thread) 36%, var(--line-strong));
+    border-color: var(--accent-thread);
   }
 
   .logos-pane-close {
@@ -346,8 +345,7 @@
     width: 32px;
     height: 32px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-3) 84%, transparent);
+    background: var(--panel-3);
     color: var(--muted);
     cursor: pointer;
   }
@@ -373,8 +371,7 @@
     min-height: 40px;
     padding: 0 12px;
     border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+    background: var(--panel-2);
     color: var(--text);
     font-family: var(--font-ui);
     font-size: 10px;
@@ -386,9 +383,9 @@
   }
 
   .logos-pane-btn:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--accent-thread) 20%, transparent);
+    background: var(--hover-strong);
     color: var(--text-strong);
-    border-color: color-mix(in srgb, var(--accent-thread) 44%, var(--line-strong));
+    border-color: var(--accent-thread);
   }
 
   .logos-pane-btn:disabled {
@@ -407,8 +404,7 @@
     height: 38px;
     padding: 0 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+    background: var(--panel-2);
     color: var(--text-strong);
     font-family: var(--font-body);
     font-size: 11px;
@@ -416,7 +412,7 @@
   }
 
   .logos-pane-input:focus {
-    border-color: var(--text-strong);
+    border-color: var(--accent-thread);
     background: var(--panel);
   }
 
@@ -447,9 +443,8 @@
     gap: 6px;
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid color-mix(in srgb, var(--accent-thread) 20%, var(--line));
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel-2) 90%, transparent);
+    border: 1px solid var(--accent-thread);
+    background: var(--panel-2);
     color: var(--text);
     font-family: var(--font-ui);
     font-size: 10px;
@@ -459,9 +454,8 @@
   }
 
   .logos-pane-cluster:hover {
-    background: color-mix(in srgb, var(--panel-raised) 94%, transparent);
-    border-color: color-mix(in srgb, var(--accent-thread) 42%, var(--line-strong));
-    box-shadow: var(--shadow-sm);
+    background: var(--hover-strong);
+    border-color: var(--accent-thread);
   }
 
   .cluster-label {
@@ -483,8 +477,7 @@
     width: 100%;
     padding: 10px 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    background: color-mix(in srgb, var(--panel-2) 88%, transparent);
+    background: var(--panel-2);
     color: var(--text);
     font-family: var(--font-ui);
     font-size: 10px;
@@ -494,8 +487,8 @@
   }
 
   .logos-pane-node:hover {
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
-    border-color: color-mix(in srgb, var(--accent-thread) 30%, var(--line-strong));
+    background: var(--hover-strong);
+    border-color: var(--accent-thread);
   }
 
   .node-marker {
@@ -525,9 +518,8 @@
     text-align: center;
     font-size: 11px;
     line-height: 1.6;
-    border: 1px dashed color-mix(in srgb, var(--line) 70%, transparent);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel-2) 72%, transparent);
+    border: 1px dashed var(--line);
+    background: var(--panel-2);
   }
 
   .logos-pane-empty.is-error {

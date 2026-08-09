@@ -614,9 +614,8 @@
 <div class="chat">
   <header class="chat-top">
     <div class="chat-title">
-      <strong>LOGOS</strong>
       <span class="chat-sub">
-        {#if activeWorkspaceName}{activeWorkspaceName}{activeChannelName ? ` / #${activeChannelName}` : ""}{:else}Pick a channel to begin{/if}
+        {#if activeWorkspaceName}{activeWorkspaceName}{activeChannelName ? ` / #${activeChannelName}` : ""}{:else}Select a channel{/if}
       </span>
     </div>
     <div class="chat-right">
@@ -718,13 +717,12 @@
   .chat { display: flex; flex-direction: column; height: 100%; min-width: 0; background: var(--bg); }
   .chat-top { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
   .chat-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
-  .chat-title strong { font-size: 15px; letter-spacing: 0.02em; color: var(--text-strong); }
   .chat-sub { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .chat-right { margin-left: auto; }
   .pill { font-size: 11px; padding: 4px 10px; border-radius: var(--radius-pill); border: 1px solid var(--line-strong); color: var(--muted); }
-  .pill-ok { color: var(--accent-verified); border-color: color-mix(in srgb, var(--accent-verified) 40%, var(--line-strong)); }
-  .pill-err { color: var(--accent-intent); border-color: color-mix(in srgb, var(--accent-intent) 40%, var(--line-strong)); }
-  .chat-notice { padding: 8px 18px; font-size: 12px; color: var(--accent-intent); background: color-mix(in srgb, var(--accent-intent) 8%, transparent); border-bottom: 1px solid var(--line); }
+  .pill-ok { color: var(--accent-verified); border-color: var(--accent-verified); }
+  .pill-err { color: var(--accent-intent); border-color: var(--accent-intent); }
+  .chat-notice { padding: 8px 18px; font-size: 12px; color: var(--accent-intent); background: var(--panel-2); border-bottom: 1px solid var(--line); }
   .chat-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 18px 8px; display: flex; flex-direction: column; gap: 6px; outline: none; }
   .chat-state { padding: 32px 12px; text-align: center; color: var(--muted); font-size: 14px; }
   .chat-state-err { color: var(--accent-intent); }
@@ -736,7 +734,7 @@
   .msg:hover { background: var(--hover); }
   .msg-active { background: var(--hover-strong); }
   .msg-old { opacity: 0.72; }
-  .suggest-box { margin: 0 18px 8px; padding: 12px 14px; border-radius: var(--radius-lg); border: 1px solid color-mix(in srgb, var(--accent-thread) 30%, var(--line-strong)); background: var(--panel-2); }
+  .suggest-box { margin: 0 18px 8px; padding: 12px 14px; border: 1px solid var(--accent-thread); background: var(--panel-2); }
   .suggest-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-thread); margin-bottom: 6px; }
   .suggest-text { font-size: 13px; color: var(--text); margin-bottom: 10px; }
   .suggest-actions { display: flex; gap: 8px; }
@@ -746,7 +744,7 @@
   .channels { display: flex; gap: 6px; flex-wrap: wrap; }
   .chip { font-size: 12px; padding: 5px 10px; border-radius: var(--radius-pill); border: 1px solid var(--line-strong); background: transparent; color: var(--muted); cursor: pointer; }
   .chip:hover { color: var(--text); }
-  .chip-active { background: color-mix(in srgb, var(--accent-thread) 18%, var(--panel)); color: var(--text-strong); border-color: color-mix(in srgb, var(--accent-thread) 45%, var(--line-strong)); }
+  .chip-active { background: var(--panel); color: var(--text-strong); border-color: var(--accent-thread); }
   .composer { display: flex; gap: 10px; align-items: flex-end; }
   .composer-input { flex: 1; min-height: 52px; max-height: 160px; resize: vertical; padding: 14px 16px; border-radius: var(--radius-lg); border: 1px solid var(--line-strong); background: var(--panel); color: var(--text-strong); font-size: 15px; line-height: 1.5; }
   .composer-input:focus { outline: none; border-color: var(--accent-thread); }
@@ -757,7 +755,7 @@
   .btn-ghost { background: transparent; color: var(--text); }
   .btn-ghost:hover:not(:disabled) { background: var(--hover); }
   .btn-primary { background: var(--panel-raised); color: var(--text-strong); border-color: var(--accent-thread); }
-  .btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
+  .btn-primary:hover:not(:disabled) { background: var(--hover-strong); }
   .btn-send { min-width: 88px; }
   @media (max-width: 640px) {
     .chat-top { padding: 12px 14px; }

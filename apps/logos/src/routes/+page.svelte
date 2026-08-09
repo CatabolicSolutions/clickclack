@@ -66,45 +66,52 @@
 </div>
 
 <style>
+  /* ── Console: fixed tiled grid operator chassis (§8.3) ── */
   .console {
     display: grid;
     grid-template-rows: 52px minmax(0, 1fr) 36px;
     height: 100%;
     min-width: 0;
   }
+
+  /* ── Topbar: pure black, 1px charcoal border, no blur/gradients/glow ── */
   .console-topbar {
     display: flex;
     align-items: center;
     gap: var(--space-4);
     padding: 0 var(--space-5);
     border-bottom: 1px solid var(--line);
-    background: linear-gradient(180deg, color-mix(in srgb, var(--panel-raised) 96%, transparent), color-mix(in srgb, var(--panel) 90%, transparent));
-    backdrop-filter: blur(12px);
+    background: var(--bg);
   }
+
   .topbar-copy {
     display: flex;
     align-items: center;
     gap: 14px;
     min-width: 0;
   }
+
   .brand {
     font-weight: 700;
     color: var(--text-strong);
     letter-spacing: 0.14em;
     font-size: 12px;
   }
+
   .brand-stack {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
   }
+
   .brand-title {
     color: var(--text-strong);
     font-size: 18px;
     font-weight: 700;
     line-height: 1.2;
   }
+
   .brand-subtitle {
     color: var(--muted);
     font-size: 13px;
@@ -113,85 +120,103 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .spacer { flex: 1; }
+
+  /* ── Persona tag: 2px amber intent border, no radius, no shadow ── */
   .persona-tag {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-height: 32px;
     padding: 0 12px;
-    border: 1px solid color-mix(in srgb, var(--accent-intent) 28%, var(--line));
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--accent-intent) 10%, transparent);
+    border: 2px solid var(--accent-intent);
+    background: transparent;
     color: var(--text-strong);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
   }
+
+  /* ── Ghost toggles: pure console buttons ── */
   .ghost {
     min-height: 38px;
     padding: 0 14px;
-    border-radius: var(--radius-pill);
     border: 1px solid var(--line);
-    background: color-mix(in srgb, var(--panel-2) 78%, transparent);
+    background: transparent;
     color: var(--muted);
     font-family: var(--font-ui);
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.02em;
     cursor: pointer;
-    box-shadow: var(--accent-glow);
+    transition: background var(--motion-fast), color var(--motion-fast), border-color var(--motion-fast);
   }
-  .ghost:hover,
-  .ghost.active {
+
+  .ghost:hover {
     color: var(--text-strong);
     border-color: var(--line-strong);
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
-    box-shadow: var(--shadow-sm);
+    background: var(--hover);
   }
+
   .ghost.active {
-    border-color: color-mix(in srgb, var(--accent-thread) 45%, var(--line-strong));
+    color: var(--text-strong);
+    border-color: var(--accent-thread);
+    background: var(--hover-strong);
   }
+
+  /* ── Body: fixed grid; semantic pane slides in-grid (§8.3) ── */
   .console-body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 0px;
     min-height: 0;
     transition: grid-template-columns var(--motion-med);
   }
+
   .console-body.semantic-open {
     grid-template-columns: minmax(0, 1fr) 340px;
-    gap: var(--space-3);
+    gap: 0;
   }
+
   .pane {
     display: grid;
     grid-template-rows: minmax(0, 1fr);
     min-height: 0;
-    border: 1px solid color-mix(in srgb, var(--line-strong) 75%, transparent);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel) 90%, transparent);
-    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--panel);
     overflow: hidden;
   }
+
+  .chat-pane {
+    background: var(--bg);
+  }
+
   .chat-body {
     min-height: 0;
   }
+
   .right-pane {
     overflow: hidden;
     transition:
       opacity var(--motion-med),
-      transform var(--motion-med),
-      width var(--motion-med);
+      transform var(--motion-med);
   }
+
   .right-pane:not(.open) {
     opacity: 0;
     pointer-events: none;
     transform: translateX(12px);
   }
+
+  /* ── Statusbar: pure black, 1px charcoal top ── */
   .console-statusbar {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     padding: 0 var(--space-4);
     border-top: 1px solid var(--line);
-    background: color-mix(in srgb, var(--panel) 82%, transparent);
+    background: var(--bg);
     color: var(--muted-2);
     font-size: 12px;
     overflow-x: auto;
@@ -214,7 +239,6 @@
       position: absolute;
       inset: 76px var(--space-3) 48px var(--space-3);
       z-index: 10;
-      box-shadow: var(--shadow-lg);
     }
   }
 

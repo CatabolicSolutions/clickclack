@@ -41,12 +41,10 @@
     padding: 12px 14px;
     border: 1px solid var(--line-strong);
     border-left: 2px solid var(--intent-clarify);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+    background: var(--panel-2);
     font-family: var(--font-body);
     font-size: 12px;
     line-height: 1.6;
-    box-shadow: var(--shadow-sm);
   }
 
   .logos-clarify-glyph {
@@ -74,8 +72,7 @@
     min-height: 32px;
     padding: 0 12px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-3) 84%, transparent);
+    background: var(--panel-3);
     color: var(--text);
     font-family: var(--font-ui);
     font-size: 10px;
@@ -86,16 +83,16 @@
   }
 
   .logos-clarify-ask {
-    background: color-mix(in srgb, var(--intent-clarify) 20%, transparent);
-    border-color: color-mix(in srgb, var(--intent-clarify) 45%, var(--line-strong));
+    background: transparent;
+    border-color: var(--intent-clarify);
     color: var(--text-strong);
   }
 
   .logos-clarify-ask:hover {
-    background: color-mix(in srgb, var(--intent-clarify) 30%, transparent);
+    background: var(--hover-strong);
   }
 
   .logos-clarify-dismiss:hover {
-    background: color-mix(in srgb, var(--panel-raised) 92%, transparent);
+    background: var(--hover-strong);
   }
 </style>

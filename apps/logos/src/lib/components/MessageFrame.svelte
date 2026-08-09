@@ -162,26 +162,22 @@
 
   <!-- Message content area -->
   <div class="msg-content">
-    <div class="msg-header">
-      <div class="msg-header-main">
-        <span class="msg-persona">{personaLabel === "--" ? "COMPANION" : personaLabel}</span>
-        {#if timestampLabel}
-          <span class="msg-time">{timestampLabel}</span>
-        {/if}
-      </div>
-      <div class="msg-header-meta">
-        <span class="msg-intent-pill" style={`--intent-color: ${intentColorVar}`}>{intentLabel}</span>
-        {#if message.confidence != null}
-          <button
-            type="button"
-            class="msg-confidence-pill"
-            onclick={handleConfClick}
-            title={onInspect ? "Open details" : undefined}
-          >
-            {Math.round(message.confidence * 100)}%
-          </button>
-        {/if}
-      </div>
+    <!-- §8.4 monospaced metadata header: [INTENT][PERSONA][CONF][THREAD][LATENCY] -->
+    <div class="msg-header mono-meta">
+      <span class="meta-intent" style="--intent-color: {intentColorVar}">[{intentLabel}]</span>
+      <span class="meta-persona">[{personaLabel === "--" ? "COMPANION" : personaLabel}]</span>
+      {#if message.confidence != null}
+        <button type="button" class="meta-conf meta-conf-clickable" onclick={handleConfClick} title={onInspect ? "Open inspector" : undefined}>
+          [CONF: {(message.confidence * 100).toFixed(1)}%]
+        </button>
+      {:else}
+        <span class="meta-conf">[CONF: --]</span>
+      {/if}
+      <span class="meta-thread">[THREAD: {threadLabel}]</span>
+      <span class="meta-latency">[{latencyLabel}]</span>
+      {#if timestampLabel}
+        <span class="meta-time">{timestampLabel}</span>
+      {/if}
     </div>
 
     {#if compact}
@@ -210,43 +206,22 @@
       </div>
     {/if}
 
-    <!-- Inline action rail (hover reveal) -->
+    <!-- Inline action rail (§8.4): [XFORM] [CONDENSE] [EXPAND] [MEM-NODE] [REWRITE] -->
     <div class="msg-actions">
       <button type="button" class="msg-action-btn" onclick={() => handleTransform("summarize")}>
-        Summarize
+        XFORM
       </button>
       <button type="button" class="msg-action-btn" onclick={() => handleTransform("condense")}>
-        Shorten
+        CONDENSE
       </button>
       <button type="button" class="msg-action-btn" onclick={() => handleTransform("expand")}>
-        Expand
+        EXPAND
       </button>
       <button type="button" class="msg-action-btn" onclick={handleMemory}>
-        Related
-      </button>
-      <button type="button" class="msg-action-btn" onclick={handleAnchor}>
-        Save
-      </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("checklist")}>
-        Checklist
-      </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("plan")}>
-        Plan
-      </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("extract")}>
-        Extract
-      </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("diagnose")}>
-        Diagnose
-      </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("counterargument")}>
-        Counter
-      </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("invert")}>
-        Invert
+        MEM-NODE
       </button>
       <button type="button" class="msg-action-btn" onclick={() => handleTransform("rewrite")}>
-        Rewrite
+        REWRITE
       </button>
     </div>
   </div>
@@ -258,31 +233,27 @@
     grid-template-columns: 4px 1fr;
     gap: 0;
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel-2) 92%, transparent);
+    background: var(--panel-2);
     position: relative;
     overflow: hidden;
-    box-shadow: var(--shadow-sm);
   }
 
   .msg-frame.msg-active {
-    border-color: color-mix(in srgb, var(--accent-thread) 32%, var(--line-strong));
+    border-color: var(--accent-thread);
     background: var(--panel);
-    box-shadow: var(--shadow-md);
   }
 
   .msg-frame:hover {
-    border-color: color-mix(in srgb, var(--accent-thread) 20%, var(--line-strong));
-    background: color-mix(in srgb, var(--panel-raised) 78%, var(--panel));
+    border-color: var(--line-strong);
+    background: var(--panel-3);
   }
 
-  /* ── Intent edge band ── */
+  /* ── Intent edge band (§8.4): 2px vertical bar ── */
   .msg-intent-band {
     width: 2px;
     min-height: 100%;
     background: var(--intent-color, var(--intent-default));
     flex-shrink: 0;
-    opacity: 0.8;
   }
 
   /* ── Content area ── */
@@ -291,63 +262,61 @@
     min-width: 0;
   }
 
-  .msg-header {
+  /* ── §8.4 Monospaced metadata header ── */
+  .mono-meta {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    line-height: 1.6;
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
     margin-bottom: 10px;
   }
 
-  .msg-header-main {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-
-  .msg-persona {
-    color: var(--text-strong);
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 650;
-    letter-spacing: 0.02em;
-  }
-
-  .msg-time {
-    color: var(--muted);
-    font-size: 11px;
-  }
-
-  .msg-header-meta {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .msg-intent-pill,
-  .msg-confidence-pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: 28px;
-    padding: 0 10px;
-    border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-3) 78%, transparent);
-    white-space: nowrap;
-    font-size: 11px;
+  .meta-intent {
+    color: var(--intent-color, var(--intent-default));
     font-weight: 600;
   }
 
-  .msg-intent-pill {
-    color: color-mix(in srgb, var(--intent-color) 82%, white);
-    border-color: color-mix(in srgb, var(--intent-color) 32%, var(--line));
-    background: color-mix(in srgb, var(--intent-color) 12%, var(--panel-3));
+  .meta-persona {
+    color: var(--text-strong);
+    font-weight: 600;
   }
 
-  .msg-confidence-pill {
-    color: var(--text-strong);
+  .meta-conf {
+    color: var(--muted-2);
+  }
+
+  .meta-conf-clickable {
+    color: var(--accent-thread);
     cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.03em;
+    line-height: 1.6;
+  }
+
+  .meta-conf-clickable:hover {
+    color: var(--text-strong);
+  }
+
+  .meta-thread {
+    color: var(--muted);
+  }
+
+  .meta-latency {
+    color: var(--muted-2);
+  }
+
+  .meta-time {
+    color: var(--muted);
+    margin-left: auto;
   }
 
   /* ── Body ── */
@@ -361,7 +330,6 @@
     transition: opacity var(--motion-med);
   }
 
-  /* Markdown overrides inside body */
   .msg-body :global(p) {
     margin: 0 0 8px 0;
   }
@@ -371,9 +339,8 @@
   }
 
   .msg-body :global(pre) {
-    background: color-mix(in srgb, var(--panel) 88%, transparent);
-    border: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
-    border-radius: var(--radius);
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
     padding: 10px 12px;
     font-family: var(--font-mono);
     font-size: 12px;
@@ -385,9 +352,8 @@
   .msg-body :global(code) {
     font-family: var(--font-mono);
     font-size: 0.9em;
-    background: color-mix(in srgb, var(--panel-3) 86%, transparent);
+    background: var(--panel-3);
     padding: 2px 6px;
-    border-radius: var(--radius-sm);
   }
 
   .msg-body :global(pre code) {
@@ -446,14 +412,17 @@
     align-self: flex-start;
     min-height: 28px;
     padding: 0 10px;
-    border: 1px solid color-mix(in srgb, var(--accent-thread) 30%, var(--line));
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--accent-thread) 10%, transparent);
+    border: 1px solid var(--accent-thread);
+    background: transparent;
     color: var(--text-strong);
     font-family: var(--font-ui);
     font-size: 10px;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  .msg-summary-expand:hover {
+    background: var(--hover-strong);
   }
 
   .msg-footer {
@@ -475,14 +444,15 @@
     gap: 10px;
     color: var(--muted);
     font-size: 11px;
+    font-family: var(--font-mono);
   }
 
-  /* ── Inspect mode: body 60% opacity ── */
+  /* ── Inspect mode: body 60% opacity (§8.5) ── */
   .msg-frame.msg-inspect .msg-body {
     opacity: 0.6;
   }
 
-  /* ── Inline action rail ── */
+  /* ── Inline action rail (§8.4): flush to bottom, hover reveal ── */
   .msg-actions {
     display: flex;
     align-items: center;
@@ -496,9 +466,6 @@
     transition:
       opacity var(--motion-fast),
       transform var(--motion-fast);
-    font-family: var(--font-ui);
-    font-size: 10px;
-    letter-spacing: 0.01em;
   }
 
   .msg-frame:hover .msg-actions,
@@ -512,34 +479,37 @@
     min-height: 30px;
     padding: 0 10px;
     border: 1px solid var(--line);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--panel-3) 72%, transparent);
+    background: transparent;
     color: var(--muted);
-    font-family: var(--font-ui);
-    font-size: 10px;
+    font-family: var(--font-mono);
+    font-size: 9px;
     font-weight: 600;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.06em;
     cursor: pointer;
+    transition:
+      background var(--motion-fast),
+      color var(--motion-fast),
+      border-color var(--motion-fast);
   }
 
   .msg-action-btn:hover {
-    background: color-mix(in srgb, var(--panel-raised) 90%, transparent);
+    background: var(--hover-strong);
     color: var(--text-strong);
-    border-color: color-mix(in srgb, var(--accent-thread) 42%, var(--line-strong));
-    box-shadow: var(--shadow-sm);
+    border-color: var(--accent-thread);
   }
 
   .msg-action-btn:focus-visible {
+    outline: 2px solid var(--focus-ring);
     outline-offset: 2px;
   }
 
   @media (max-width: 640px) {
-    .msg-header {
+    .mono-meta {
       flex-direction: column;
-      align-items: stretch;
+      gap: 2px;
     }
-    .msg-header-meta {
-      flex-wrap: wrap;
+    .meta-time {
+      margin-left: 0;
     }
   }
 

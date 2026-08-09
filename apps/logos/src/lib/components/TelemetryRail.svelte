@@ -60,10 +60,8 @@
     grid-template-rows: auto auto;
     gap: 6px;
     padding: 12px 14px;
-    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--panel) 88%, transparent);
-    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line-strong);
+    background: var(--panel);
   }
 
   .rail-label {
