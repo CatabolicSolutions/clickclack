@@ -32,6 +32,8 @@
   import ClarificationPrompt from "$lib/components/ClarificationPrompt.svelte";
   import { activeMessageId, currentPersona, operatorNotice } from "$lib/ui";
   import { transform, memoryAnchor, memoryQuery, respond } from "$lib/cognition";
+  import { analyzeMessage, getCachedAnalysis, isAnalysisFailed } from "$lib/analyzer";
+  import type { AnalysisResult } from "$lib/cognition";
 
   // ── Local state ──────────────────────────────────────────────
 
@@ -55,6 +57,12 @@
 
   /** Non-persistent body overrides from applied transforms: messageId → newBody */
   let appliedOverrides = $state<Map<string, string>>(new Map());
+
+  /** Analysis results from cognition POST /analyze: messageId → AnalysisResult */
+  let analyzedMeta = $state<Map<string, AnalysisResult>>(new Map());
+
+  /** Track message IDs we've already attempted to analyze (prevents re-queue). */
+  let seenForAnalysis = $state<Set<string>>(new Set());
 
   let companionSuggestion = $state<{
     content: string;
@@ -109,6 +117,33 @@
   function messageMeta(msg: Record<string, unknown>): MessageMetadata {
     return readMessageMetadata(msg);
   }
+
+  // ── Analyze-on-ingest: fire POST /analyze for every new message ──
+
+  $effect(() => {
+    for (const msg of snapshot.messages) {
+      const msgId = String(msg.id);
+      if (!msgId || seenForAnalysis.has(msgId)) continue;
+      seenForAnalysis.add(msgId);
+
+      const body = typeof (msg as Record<string, unknown>).body === "string"
+        ? (msg as Record<string, unknown>).body as string
+        : "";
+      if (!body.trim()) continue;
+
+      // Skip re-analysis if stored metadata already has intent & persona
+      const stored = readMessageMetadata(msg as Record<string, unknown>);
+      if (stored.intent && stored.confidence !== undefined) continue;
+
+      // Fire async analysis; never blocks rendering
+      void analyzeMessage(msgId, body).then((result) => {
+        if (result) {
+          analyzedMeta.set(msgId, result);
+          analyzedMeta = new Map(analyzedMeta); // trigger Svelte 5 reactivity
+        }
+      });
+    }
+  });
 
   const activeWorkspaceName = $derived(
     snapshot.workspaces.find((workspace) => workspace.id === snapshot.activeWorkspaceId)?.name ?? null,
@@ -212,15 +247,39 @@
   function messageToLogos(msg: CognitiveMessage): LogosMessage {
     const m = messageMeta(msg);
     const id = String(msg.id ?? "");
+    const analysis = analyzedMeta.get(id);
+
+    // Merge: analysis results win over stored metadata
+    const mergedIntent = analysis?.intent ?? m.intent ?? null;
+    const mergedPersona = analysis?.persona ?? m.persona ?? null;
+    const mergedConfidence = analysis?.confidence ?? m.confidence ?? null;
+
+    // Merge telemetry: analysis telemetry + stored telemetry
+    const storedTelemetry = (m as Record<string, unknown>).telemetry as Record<string, unknown> | undefined;
+    const mergedTelemetry: Record<string, unknown> = {
+      ...(storedTelemetry ?? {}),
+      ...(analysis?.telemetry ?? {}),
+    };
+
+    // Build merged metadata_json for InspectorBlade
+    const mergedMetadata: Record<string, unknown> = {
+      ...(m as Record<string, unknown>),
+      telemetry: mergedTelemetry,
+    };
+    // Surface memory_citations from telemetry into metadata_json root
+    if (mergedTelemetry.memory_citations) {
+      mergedMetadata.memory_citations = mergedTelemetry.memory_citations;
+    }
+
     return {
       id,
       body: appliedOverrides.get(id) ?? String(msg.body ?? ""),
-      intent: m.intent ?? null,
-      persona: m.persona ?? null,
-      confidence: m.confidence ?? null,
+      intent: mergedIntent,
+      persona: mergedPersona,
+      confidence: mergedConfidence,
       thread_id: m.thread_id ?? null,
       execution_status: m.execution_status ?? null,
-      metadata_json: (m as Record<string, unknown>) ?? null,
+      metadata_json: mergedMetadata,
       transform_history: m.transform_history ?? [],
       created_at: msg.created_at ? String(msg.created_at) : null,
     };
@@ -391,6 +450,11 @@
   // ── Clarification handling ─────────────────────────────────────
 
   function getClarificationQuestion(msg: Record<string, unknown>): string | null {
+    const msgId = String((msg as { id?: unknown }).id ?? "");
+    // Check analyzed metadata first (live cognition result)
+    const analysis = analyzedMeta.get(msgId);
+    if (analysis?.clarification_question) return analysis.clarification_question;
+    // Fallback to stored metadata
     const m = messageMeta(msg);
     const cq = m.clarification_question;
     if (typeof cq === "string" && cq.trim()) return cq.trim();
@@ -655,6 +719,28 @@
     <div class="suggest-box">
       <div class="suggest-label">Companion suggestion</div>
       <div class="suggest-text">{companionSuggestion.content}</div>
+      {#if companionSuggestion.memoryPreview.length > 0}
+        <div class="suggest-memory">
+          <span class="suggest-memory-label">MEMORY CITATIONS</span>
+          {#each companionSuggestion.memoryPreview as mem}
+            <span class="suggest-memory-node">#NODE-{mem.id.slice(0, 8)} ({mem.score?.toFixed(3) ?? "--"})</span>
+          {/each}
+        </div>
+      {/if}
+      {#if companionSuggestion.followups.length > 0}
+        <div class="suggest-followups">
+          <span class="suggest-followups-label">FOLLOW-UPS</span>
+          {#each companionSuggestion.followups as fup}
+            <button
+              class="chip chip-followup"
+              onclick={() => {
+                composerText = fup;
+                dismissCompanionSuggestion();
+                composerRef?.focus();
+              }}>{fup}</button>
+          {/each}
+        </div>
+      {/if}
       <div class="suggest-actions">
         <button class="btn btn-ghost" onclick={dismissCompanionSuggestion}>Dismiss</button>
         <button class="btn btn-primary" onclick={applyCompanionSuggestion}>Use</button>
@@ -710,9 +796,16 @@
   .msg:hover { background: var(--hover); }
   .msg-active { background: var(--hover-strong); }
   .msg-old { opacity: 0.72; }
-  .suggest-box { margin: 0 18px 8px; padding: 12px 14px; border: 1px solid var(--accent-thread); background: var(--panel-2); }
+  .suggest-box { margin: 0 18px 8px; padding: 12px 14px; border: 1px solid var(--line-strong); border-left: 2px solid var(--accent-thread); background: var(--panel-2); }
   .suggest-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-thread); margin-bottom: 6px; }
   .suggest-text { font-size: 13px; color: var(--text); margin-bottom: 10px; }
+  .suggest-memory { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin-bottom: 8px; padding: 8px 10px; border: 1px solid var(--line); background: var(--panel); }
+  .suggest-memory-label { font-size: 9px; font-weight: 700; letter-spacing: 0.05em; color: var(--muted-2); }
+  .suggest-memory-node { font-family: var(--font-mono); font-size: 9px; color: var(--accent-thread); }
+  .suggest-followups { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin-bottom: 10px; }
+  .suggest-followups-label { font-size: 9px; font-weight: 700; letter-spacing: 0.05em; color: var(--muted-2); }
+  .chip-followup { font-size: 11px; padding: 4px 10px; border: 1px solid var(--line-strong); background: transparent; color: var(--accent-thread); cursor: pointer; font-family: var(--font-body); }
+  .chip-followup:hover { background: var(--hover-strong); color: var(--text-strong); border-color: var(--accent-thread); }
   .suggest-actions { display: flex; gap: 8px; }
   .composer-dock { padding: 12px 18px 16px; border-top: 1px solid var(--line); background: var(--bg); }
   .composer-context { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }

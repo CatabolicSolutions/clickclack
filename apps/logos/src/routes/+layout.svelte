@@ -25,10 +25,6 @@
     const setInspect = (down: boolean) => inspectMode.set(down);
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.altKey) setInspect(true);
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        document.dispatchEvent(new CustomEvent("logos:palette"));
-      }
     };
     const onKeyUp = (e: KeyboardEvent) => {
       if (!e.altKey) setInspect(false);

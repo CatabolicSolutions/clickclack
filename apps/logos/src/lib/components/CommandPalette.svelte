@@ -17,7 +17,7 @@
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         onToggle();
-      } else if (e.key === "/" && !isOpen && !(e.target instanceof HTMLInputElement)) {
+      } else if (e.key === "/" && !isOpen && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
         e.preventDefault();
         onToggle();
       } else if (e.key === "Escape" && isOpen) {
