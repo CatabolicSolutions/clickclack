@@ -1,101 +1,115 @@
-# PROJECT LOGOS — Build README (what was done to clickclack so far)
+# PROJECT LOGOS — Build README (what exists so far)
 
-**Date:** 2026-08-07
+**Date:** 2026-08-09
 **Repo:** `CatabolicSolutions/clickclack` (fork of `openclaw/clickclack`)
-**Branch:** `cognitive-os` — HEAD `894c326`, all work committed + pushed to fork
+**Branch:** `cognitive-os` — HEAD `642dc5a`, all work committed + pushed
 **Owner:** Conor Ross / RINCON
-**Purpose:** Hand-off record. What exists, what was changed, what is live — so a
-fresh builder (Copilot) can pick up without re-deriving state.
+
+> **PURPOSE:** This is the factual record for a builder (Copilot) taking over.
+> It documents what was built, what is live, and where things stand — so you
+> start from verified state, not re-derived guesses. Read `LOGOS_CORRECTION_ADVISEMENT.md`
+> FIRST — it defines what Conor actually wants and what to stop doing.
 
 ---
 
-## 1. The intent (restated)
+## 1. THE INTENT (restated, unambiguous)
 
-ClickClack is **plumbing** — it lives deep underneath. The goal is a **standalone
-companion application** ("Project LOGOS") that:
-- **extracts the chat feature** from clickclack and laces it in as one embedded
-  component,
-- builds everything else (threads, memory, inspection, telemetry, personas,
-  transforms, command palette) **natively in the new app**,
-- has **its own shape/design/UX/interface, own URL, own deployment** — NOT a
-  reskin of clickclack's UI, NOT a subpath of its origin.
+ClickClack is **plumbing** — it lives deep underneath and stays untouched as
+the message substrate. The goal is a **standalone companion application**
+("Project LOGOS") that:
+
+- **extracts the chat feature** from clickclack and laces it in as ONE
+  embedded component (uses clickclack's API + realtime, cookie auth),
+- builds **everything else natively in the new app** — operator console
+  shell, semantic thread sidebar, memory graph viewer, message inspection
+  blades, command palette + keyboard-first nav, adaptive companion replies,
+  telemetry,
+- has **its own shape/design/UX/interface, its own URL, its own
+  deployment** — NOT a reskin of clickclack's UI, NOT a subpath of its
+  origin, NOT a modification of the existing site.
+
+**What NOT to do (this is what went wrong before):** modifying the clickclack
+SPA/API and mounting a second app as a subpath of the same deployment reads
+as "same program, different coat of paint" — Conor rejected that explicitly,
+more than once. Do not touch `apps/web` (the clickclack SPA) or the clickclack
+API surface for the companion's sake.
 
 ---
 
-## 2. What was built on the `cognitive-os` branch (commits, newest first)
+## 2. WHAT WAS BUILT (commits, newest first — branch `cognitive-os`)
 
 | Commit | What |
 |---|---|
-| `894c326` | logos: root-relative build for standalone origin (drop `/logos` base) |
-| `3888f26` | logos: standalone origin — `logos.catabolicsolutions.com` serves LOGOS at root with same-origin `/api` + `/cognition` (worker host-aware routing + custom domain) |
-| `ca641b8` | logos: T2-F3 — fix OpenAPI duplicate `patch:` key; metadata PATCH as own path; regenerated SDK types |
-| `57fad68` | logos: T2-F2 — E2E PATCH round-trip test **caught a real bug**: sqlite read path dropped all 6 cognitive fields on read-back; fixed `messageSelect()`/`scanMessage()`; migration tests pre-apply 0041 |
-| `df6460a` | logos: fixed stale asset-boundary test (PWA service-worker/manifest are now legit embedded assets) |
-| `357c3ed` | logos: hygiene — untracked `apps/logos/.svelte-kit` build artifacts |
-| `b79dc66` | logos: total scope master record (`LOGOS_SCOPE.md`) |
-| `cca1f16` | logos: recap + T2 finish / T3 start decision doc (CLIs verified) |
-| `c7b096a` | logos: Phase B/C build block for Copilot/VSCode |
-| `e843997` | logos: realtime seam details (WS path/protocol/fallback) |
-| `389b54f` | logos: landed in-flight tracks — interaction layer + adaptive `/respond` + realtime seam |
-| `0946007` | logos: handoff doc + correction advisory |
-| `fe3146c` / `cf2bbc4` | logos: new application `apps/logos` — chat substrate + semantic surfaces + inspection (L1-L3) |
-| earlier | semantic layer (local embeddings, clustering, telemetry), upgraded chassis (spec §8), v2 tokens |
+| `642dc5a` | logos: Copilot review fixes — orphaned anchor code, a11y labels, dead union trim |
+| `9992af7` | logos: §8 operator-console surface build-out (mono metadata header, 5-button action rail, flush grid, zero decorative artifacts) |
+| `cb004a3` | logos: recap + T2 finish / T3 start plan |
+| `aeec01d` | logos: record total scope — full §8 outline + verified live state |
+| `164a311` | logos: fix standalone-origin auth — shared cookie domain + absolute return_to |
+| `1fb435e` | logos: restore root-relative standalone build (base '') — fix subpath strapping |
+| `9c31f66` | logos: REVERT Jarvis skin — restore monochrome §8 spec (Conor correction) |
+| `a472466` | logos: Jarvis theme (REVERTED by 9c31f66 — do not reintroduce) |
+| `2e397bb` | logos: lock in current chat-first messaging shell |
+| earlier | chat substrate, semantic surfaces, inspection/telemetry, cognition scaffold, T2 schema |
+
+**Subprojects that exist in this repo:**
+- `apps/logos` — the standalone SvelteKit companion app (adapter-static,
+  root-relative `base: ''`). THIS is the upspun surface.
+- `apps/cognition` — the "brain": standalone Hono/TS service with routes
+  `/healthz`, `/analyze`, `/respond`, `/transform`, `/threads/cluster`,
+  `/memory/query`, `/memory/list`, `/memory/anchors` (DeepSeek LLM lane,
+  local all-MiniLM embeddings via transformers.js — no external embeddings key).
+- `apps/api` — clickclack plumbing (Go). T2 message-object schema is live:
+  `intent`, `persona`, `confidence`, `context_json`, `metadata_json`,
+  `transform_history_json` on `messages` (sqlite 0041 + postgres 0042),
+  `PATCH /messages/{id}/metadata`, analyze-on-ingest. **Do not modify for the
+  companion's sake — it's the substrate.**
+- `apps/web` — the clickclack SPA. **Do not touch.**
+- `packages/sdk-ts` — typed SDK client (regenerable via `pnpm build:sdk`).
+
+**LOGOS app components** (`apps/logos/src/lib/`):
+- `clickclack/` — minimal API client (cookie auth, workspaces, channels,
+  messages, chatState, WS realtime with 10s poll fallback)
+- `components/` — ChatStream (THE embedded chat), MessageFrame (intent band,
+  mono metadata header, action rail), SemanticMargin, CommandPalette,
+  InspectorBlade, TelemetryRail, SemanticThreadPane, ClarificationPrompt,
+  ResultStrip
+- `cognition.ts` — typed client for the cognition service
+- `styles/` — tokens.css (monochrome §8), chassis.css (operator shell),
+  NO theme.css (Jarvis deleted)
 
 ---
 
-## 3. What is live right now (verified 08-07)
+## 3. WHAT IS LIVE (verified 2026-08-09)
 
-- **`apps/logos`** — SvelteKit standalone app (adapter-static, root-relative):
-  - `src/styles/tokens.css` + `chassis.css` — exact spec §8 design system
-    (#000000 / #F4F4F0 / #1A1A1A, 0px radius, Inter + JetBrains Mono, 100-150ms
-    linear motion, 2px functional accents)
-  - `src/lib/components/` — MessageFrame (intent band, mono metadata header,
-    inline action rail, CONF-click split-blade), SemanticMargin (grid marks +
-    line counters), CommandPalette (Cmd+K, `/`, `:persona`, `:inspect`),
-    SemanticThreadPane (THREADS | MEMORY tabs), InspectorBlade (TELEMETRY |
-    MEMORY | LOGPROBS | PAYLOAD | STACK), ClarificationPrompt, TelemetryRail,
-    ChatStream (embedded chat component)
-  - `src/lib/clickclack/` — minimal API client (cookie auth, workspaces,
-    channels, messages, chatState, WS realtime with poll fallback)
-  - `src/lib/cognition.ts` — typed client for the cognition service
-- **`apps/cognition`** — standalone brain service (Hono/TS), LIVE on droplet
-  (`logos-cognition` :8787, auth-gated, Cloudflare-only):
-  - `/analyze` (intent/persona/confidence/telemetry/clarification),
-    `/transform` (15 ops), `/respond` (adaptive, memory-cited),
-    `/threads/cluster` (local embeddings, all-MiniLM), `/memory/anchors|query|list`
-  - Local embeddings via transformers.js — no OpenAI key needed
-- **API (clickclack plumbing)**: T2 message-object schema live — `intent`,
-  `persona`, `confidence`, `context_json`, `metadata_json`,
-  `transform_history_json` on `messages` (sqlite + Neon postgres, verified
-  6/6 columns), `PATCH /messages/{id}/metadata`, server-side analyze-on-ingest
-- **Deployments**: clickclack binary on droplet (:8090, backup kept),
-  cognition service :8787, logos static :8788, Cloudflare worker version
-  `473db384` with custom domains `app.catabolicsolutions.com` +
-  `logos.catabolicsolutions.com`
+- **`logos.catabolicsolutions.com`** → LOGOS app at ROOT (200, root-relative
+  assets). Auth works: OAuth → GitHub → back to logos origin with shared
+  `Domain=.catabolicsolutions.com` cookies. `/api/me` → 401 clean challenge.
+- **`app.catabolicsolutions.com`** → clickclack SPA, unchanged (plumbing, 200).
+- Worker routes: `logos.` origin → LOGOS static (:8788 droplet) + `/api/*` →
+  clickclack API (:8090) + `/cognition/*` → cognition (:8787, token-injected).
+  No `/logos/*` subpath route (removed — that pattern is rejected).
+- Droplet `137.184.144.196`: clickclack API :8090, logos-app static :8788,
+  logos-cognition :8787 (firewalled to Cloudflare IPs).
 
 ---
 
-## 4. Verification state
+## 4. VERIFIED STATE NOTES (honesty)
 
-- `cd apps/api && go build ./... && go test ./...` — **all green**
-  (incl. new E2E metadata round-trip; suite was failing before the read-path fix)
-- `cd apps/logos && npm run build` — passes (typecheck + build)
-- `cd apps/cognition && npm run build` — passes (tsc + esbuild)
-- Live checks: `https://logos.catabolicsolutions.com/` serves LOGOS (200);
-  `/cognition/healthz` ok; `/cognition/analyze` returns real DeepSeek output;
-  `/api/me` correctly requires auth
+- The surface is a **standalone shell with the clickclack chat embedded** —
+  it is NOT yet the fully realized §8 operator console experience Conor
+  described (semantic margin, deep inspection, telemetry, keyboard-first
+  console identity). That's the build work remaining.
+- Monochrome §8 is the identity: pure black, 2px functional accents,
+  0px radius, zero gradients/glass/glow/shadows.
+- Cognition routes are live and return real DeepSeek output; local
+  embeddings work (no OpenAI key needed; the old OpenAI key is dead).
+- Logprobs are n/a on DeepSeek — never fake them; use intent_vector_score,
+  latency, tokens, citations instead.
 
----
+## 5. BUILD / VERIFY COMMANDS
 
-## 5. Known gaps / honesty notes
-
-1. **Standalone deployment identity exists but the app still needs finishing**
-   — the standalone origin + worker routing + root-relative build are in place;
-   the companion UX build-out (what Conor actually wants) is the remaining work.
-2. `.svelte-kit` artifacts untracked (fixed); keep them out of commits.
-3. Logprobs: DeepSeek API doesn't return them — InspectorBlade shows n/a,
-   never faked. Use intent_vector_score, latency, tokens, citations instead.
-4. OpenAI embeddings key is dead (401) — local all-MiniLM embeddings replace it.
-5. Copilot CLI auth was attempted via device flow during this session; the
-   user declined to complete it. A fresh `copilot login --device-code` will be
-   needed if Copilot CLI is used for the build hand-off.
+- `cd apps/logos && npm run typecheck && npm run build` → dist/
+- `cd apps/api && go build ./... && go test ./...`
+- `cd apps/cognition && npm run build`
+- Deploy is RINCON's job (droplet rsync + systemd restart). Builders:
+  commit + push only.

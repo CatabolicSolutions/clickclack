@@ -289,3 +289,99 @@ func TestDeleteMessagePreservesDirectMessageBoundary(t *testing.T) {
 		t.Fatal("expected owner outside DM to be blocked from deleting the message")
 	}
 }
+
+func TestUpdateMessageMetadataRoundTripPostgres(t *testing.T) {
+	ctx := context.Background()
+	st := newIsolatedPostgresTestStore(t)
+	if err := st.Migrate(ctx); err != nil {
+		t.Fatal(err)
+	}
+	owner, err := st.EnsureBootstrap(ctx, "Owner", "pg-metadata@example.com")
+	if err != nil {
+		t.Fatal(err)
+	}
+	workspaces, err := st.ListWorkspaces(ctx, owner.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	channels, err := st.ListChannels(ctx, workspaces[0].ID, owner.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create a message.
+	msg, _, err := st.CreateMessage(ctx, store.CreateMessageInput{
+		ChannelID: channels[0].ID,
+		AuthorID:  owner.ID,
+		Body:      "deploy the cognition service",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// PATCH cognitive metadata (additive, partial).
+	confidence := 0.93
+	contextJSON := `{"workspace":"logos","track":"T3"}`
+	metadataJSON := `{"telemetry":{"latency_ms":412,"model":"deepseek-chat"}}`
+	transformHistoryJSON := `[{"op":"condense","ts":"2026-08-07T00:00:00Z"}]`
+	updated, err := st.UpdateMessageMetadata(ctx, store.UpdateMessageMetadataInput{
+		MessageID:           msg.ID,
+		UserID:              owner.ID,
+		Intent:              strPtr("command"),
+		Persona:             strPtr("operator"),
+		Confidence:          &confidence,
+		ContextJSON:         &contextJSON,
+		MetadataJSON:        &metadataJSON,
+		TransformHistoryJSON: &transformHistoryJSON,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify returned message.
+	if updated.Intent != "command" || updated.Persona != "operator" {
+		t.Fatalf("intent/persona did not round-trip: intent=%q persona=%q", updated.Intent, updated.Persona)
+	}
+	if updated.Confidence == nil || *updated.Confidence != confidence {
+		t.Fatalf("confidence did not round-trip: %v", updated.Confidence)
+	}
+	if updated.ContextJSON == nil || *updated.ContextJSON != contextJSON {
+		t.Fatalf("context did not round-trip: %v", updated.ContextJSON)
+	}
+	if updated.MetadataJSON == nil || *updated.MetadataJSON != metadataJSON {
+		t.Fatalf("metadata did not round-trip: %v", updated.MetadataJSON)
+	}
+	if updated.TransformHistoryJSON == nil || *updated.TransformHistoryJSON != transformHistoryJSON {
+		t.Fatalf("transform_history did not round-trip: %v", updated.TransformHistoryJSON)
+	}
+
+	// Verify persistence via GetMessage.
+	fetched, err := st.GetMessage(ctx, msg.ID, owner.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fetched.Intent != "command" || fetched.Persona != "operator" || fetched.Confidence == nil || *fetched.Confidence != confidence {
+		t.Fatalf("GetMessage did not reflect PATCH: intent=%q persona=%q confidence=%v", fetched.Intent, fetched.Persona, fetched.Confidence)
+	}
+	if fetched.MetadataJSON == nil || *fetched.MetadataJSON != metadataJSON {
+		t.Fatalf("GetMessage metadata mismatch: %v", fetched.MetadataJSON)
+	}
+
+	// Partial update preserves untouched fields.
+	partial, err := st.UpdateMessageMetadata(ctx, store.UpdateMessageMetadataInput{
+		MessageID: msg.ID,
+		UserID:    owner.ID,
+		Intent:    strPtr("reflect"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if partial.Intent != "reflect" {
+		t.Fatalf("intent update failed: %#v", partial.Intent)
+	}
+	if partial.Persona != "operator" {
+		t.Fatalf("partial update clobbered persona: %#v", partial.Persona)
+	}
+}
+
+func strPtr(s string) *string { return &s }

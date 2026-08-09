@@ -330,6 +330,13 @@ export type Message = {
   quoted_author?: User;
   nonce?: string;
   reactions?: ReactionSummary[];
+  // Cognitive OS T2 fields
+  intent?: string;
+  persona?: string;
+  confidence?: number;
+  context?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  transform_history?: unknown[];
 };
 
 export type MessagePage = {
@@ -1126,6 +1133,26 @@ export class ClickClackClient {
       const data = await this.request<{ message: Message }>(`/api/messages/${messageId}`, {
         method: "DELETE",
       });
+      return data.message;
+    },
+    updateMetadata: async (
+      messageId: string,
+      input: {
+        intent?: string;
+        persona?: string;
+        confidence?: number;
+        context?: Record<string, unknown>;
+        metadata?: Record<string, unknown>;
+        transform_history?: unknown[];
+      },
+    ): Promise<Message> => {
+      const data = await this.request<{ message: Message }>(
+        `/api/messages/${messageId}/metadata`,
+        {
+          method: "PATCH",
+          body: JSON.stringify(input),
+        },
+      );
       return data.message;
     },
     addReaction: async (messageId: string, emoji: string): Promise<ReactionMutationResponse> =>
