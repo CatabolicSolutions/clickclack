@@ -35,6 +35,29 @@ export class ClickClackContainer extends Container {
   };
 }
 
+// PROJECT LOGOS: session/oauth cookies must work across BOTH origins
+// (app.catabolicsolutions.com = clickclack plumbing, logos.catabolicsolutions.com
+// = the upspun surface). The upstream API sets host-only cookies, which would
+// make OAuth on the logos origin a login loop. Rewrite Set-Cookie to share the
+// cookie across the registrable domain.
+async function shareCookieDomain(response: Response): Promise<Response> {
+  const setCookies =
+    typeof response.headers.getSetCookie === "function"
+      ? response.headers.getSetCookie()
+      : (response.headers.get("set-cookie") ? [response.headers.get("set-cookie")!] : []);
+  if (setCookies.length === 0) return response;
+  const headers = new Headers(response.headers);
+  headers.delete("set-cookie");
+  for (const cookie of setCookies) {
+    headers.append("set-cookie", /;\s*Domain=/i.test(cookie) ? cookie : `${cookie}; Domain=.catabolicsolutions.com`);
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, workerEnv: Env): Promise<Response> {
     const requestURL = new URL(request.url);
@@ -72,13 +95,15 @@ export default {
         headers.set("Authorization", `Bearer ${workerEnv.CLICKCLACK_COGNITION_TOKEN}`);
       }
 
-      return fetch(
-        new Request(upstream.toString(), {
-          method: request.method,
-          headers,
-          body: request.method === "GET" || request.method === "HEAD" ? null : request.body,
-          redirect: "manual",
-        }),
+      return shareCookieDomain(
+        await fetch(
+          new Request(upstream.toString(), {
+            method: request.method,
+            headers,
+            body: request.method === "GET" || request.method === "HEAD" ? null : request.body,
+            redirect: "manual",
+          }),
+        ),
       );
     }
 
@@ -93,25 +118,14 @@ export default {
       workerEnv.CLICKCLACK_COGNITION_URL &&
       (requestURL.pathname === "/cognition" || requestURL.pathname.startsWith("/cognition/"));
 
-    // PROJECT LOGOS: serve the LOGOS application (droplet :8788) at /logos/*
-    // on the same origin so /api auth + /cognition stay same-origin.
-    const shouldProxyLogos =
-      workerEnv.CLICKCLACK_LOGOS_URL &&
-      (requestURL.pathname === "/logos" || requestURL.pathname.startsWith("/logos/"));
-
-    if (shouldProxyToUpstream || shouldProxyCognition || shouldProxyLogos) {
+    if (shouldProxyToUpstream || shouldProxyCognition) {
       const incoming = new URL(request.url);
       let upstreamBase = workerEnv.CLICKCLACK_UPSTREAM_URL!;
       if (shouldProxyCognition) upstreamBase = workerEnv.CLICKCLACK_COGNITION_URL!;
-      else if (shouldProxyLogos) upstreamBase = workerEnv.CLICKCLACK_LOGOS_URL!;
       const upstream = new URL(upstreamBase);
       if (shouldProxyCognition) {
         // Strip the /cognition prefix — cognition routes are /analyze, /transform, etc.
         upstream.pathname = incoming.pathname.replace(/^\/cognition(\/|$)/, "/");
-      } else if (shouldProxyLogos) {
-        // Strip the /logos prefix so the static server resolves /logos/ → index
-        upstream.pathname = incoming.pathname.replace(/^\/logos(\/|$)/, "/");
-        if (incoming.pathname === "/logos") upstream.pathname = "/";
       } else {
         upstream.pathname = incoming.pathname;
       }
@@ -127,13 +141,15 @@ export default {
         headers.set("Authorization", `Bearer ${workerEnv.CLICKCLACK_COGNITION_TOKEN}`);
       }
 
-      return fetch(
-        new Request(upstream.toString(), {
-          method: request.method,
-          headers,
-          body: request.method === "GET" || request.method === "HEAD" ? null : request.body,
-          redirect: "manual",
-        }),
+      return shareCookieDomain(
+        await fetch(
+          new Request(upstream.toString(), {
+            method: request.method,
+            headers,
+            body: request.method === "GET" || request.method === "HEAD" ? null : request.body,
+            redirect: "manual",
+          }),
+        ),
       );
     }
 

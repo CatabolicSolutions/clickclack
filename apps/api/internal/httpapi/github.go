@@ -142,7 +142,7 @@ func (s *Server) startGitHubOAuth(w http.ResponseWriter, r *http.Request, deskto
 	}
 	// PROJECT LOGOS: remember where the user came from so the callback can
 	// return them to the LOGOS app (/logos/) instead of the clickclack root.
-	if returnTo := strings.TrimSpace(r.URL.Query().Get("return_to")); validReturnTo(returnTo) {
+	if returnTo := strings.TrimSpace(r.URL.Query().Get("return_to")); validReturnTo(returnTo, s.publicAPIURL) {
 		http.SetCookie(w, &http.Cookie{
 			Name:     s.cookies.OAuthBinding + "_return_to",
 			Value:    returnTo,
@@ -275,7 +275,7 @@ func (s *Server) githubCallback(w http.ResponseWriter, r *http.Request) {
 		}
 		// PROJECT LOGOS: honor the return_to cookie so OAuth lands the user
 		// inside the LOGOS app (/logos/) instead of the clickclack root.
-		if rc, err := requestCookie(r, s.cookies.OAuthBinding+"_return_to"); err == nil && validReturnTo(rc.Value) {
+		if rc, err := requestCookie(r, s.cookies.OAuthBinding+"_return_to"); err == nil && validReturnTo(rc.Value, s.publicAPIURL) {
 			destination = rc.Value
 			http.SetCookie(w, &http.Cookie{
 				Name:     s.cookies.OAuthBinding + "_return_to",
@@ -647,19 +647,41 @@ func randomOAuthSecret() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(data), nil
 }
 
-// validReturnTo allows only same-origin relative paths (e.g. "/logos/") so
-// the OAuth callback can never be abused as an open redirect.
-func validReturnTo(path string) bool {
-	if path == "" || !strings.HasPrefix(path, "/") {
+// validReturnTo allows same-origin relative paths (e.g. "/logos/") or
+// absolute URLs on the same site (e.g. https://logos.catabolicsolutions.com/)
+// so the OAuth callback can return users to the standalone LOGOS origin
+// without becoming an open redirect.
+func validReturnTo(destination string, allowedHost string) bool {
+	if destination == "" || strings.Contains(destination, "\\") {
 		return false
 	}
-	if strings.HasPrefix(path, "//") {
+	if strings.HasPrefix(destination, "/") {
+		if strings.HasPrefix(destination, "//") {
+			return false
+		}
+		return true
+	}
+	parsed, err := url.Parse(destination)
+	if err != nil {
 		return false
 	}
-	if strings.Contains(path, "\\") {
+	if parsed.Scheme != "https" || parsed.Host == "" {
 		return false
 	}
-	return true
+	host := strings.ToLower(parsed.Hostname())
+	if allowedHost == "" {
+		return false
+	}
+	allowed := strings.ToLower(strings.TrimPrefix(allowedHost, "https://"))
+	allowed = strings.TrimPrefix(allowed, "http://")
+	// Allow the exact host or any subdomain of the same registrable domain
+	// (e.g. app.catabolicsolutions.com and logos.catabolicsolutions.com).
+	parts := strings.Split(allowed, ".")
+	if len(parts) < 2 {
+		return host == allowed
+	}
+	parent := strings.Join(parts[len(parts)-2:], ".")
+	return host == allowed || strings.HasSuffix(host, "."+parent)
 }
 
 func randomLegacyOAuthGrant() (string, error) {
