@@ -372,21 +372,6 @@
     activeTransforms = new Map(activeTransforms);
   }
 
-  async function handleAnchorEvent(detail: { messageId: string }) {
-    const msg = snapshot.messages.find((m) => m.id === detail.messageId);
-    if (!msg) return;
-    const body = (msg as Record<string, unknown>).body;
-    if (typeof body !== "string" || !body.trim()) return;
-
-    operatorNotice.set("Anchoring message into semantic memory…");
-    const result = await memoryAnchor(body, detail.messageId);
-    if (result?.id) {
-      operatorNotice.set(`Memory anchor created: #NODE-${result.id.slice(0, 8)}`);
-      return;
-    }
-    operatorNotice.set("Memory anchor failed.");
-  }
-
   function dismissTransform(messageId: string) {
     activeTransforms.delete(messageId);
     activeTransforms = new Map(activeTransforms);
@@ -582,13 +567,6 @@
     }
   }
 
-  function handleBubbledAnchor(e: Event) {
-    const ce = e as CustomEvent<{ messageId: string }>;
-    if (ce.detail?.messageId) {
-      void handleAnchorEvent(ce.detail);
-    }
-  }
-
   onMount(() => {
     boot();
 
@@ -597,7 +575,6 @@
     if (listEl) {
       listEl.addEventListener("onTransform", handleBubbledTransform);
       listEl.addEventListener("onMemory", handleBubbledMemory);
-      listEl.addEventListener("onAnchor", handleBubbledAnchor);
     }
 
     // Focus the message list for keyboard nav
@@ -607,7 +584,6 @@
   onDestroy(() => {
     messageListRef?.removeEventListener("onTransform", handleBubbledTransform);
     messageListRef?.removeEventListener("onMemory", handleBubbledMemory);
-    messageListRef?.removeEventListener("onAnchor", handleBubbledAnchor);
   });
 </script>
 <!-- ═══ LOGOS CHAT ═══ -->

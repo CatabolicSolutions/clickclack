@@ -123,27 +123,13 @@
   }
 
   function handleTransform(
-    op:
-      | "summarize"
-      | "condense"
-      | "expand"
-      | "rewrite"
-      | "checklist"
-      | "plan"
-      | "extract"
-      | "diagnose"
-      | "counterargument"
-      | "invert",
+    op: "summarize" | "condense" | "expand" | "rewrite",
   ) {
     dispatch("onTransform", { op, messageId: message.id });
   }
 
   function handleMemory() {
     dispatch("onMemory", { messageId: message.id });
-  }
-
-  function handleAnchor() {
-    dispatch("onAnchor", { messageId: message.id });
   }
 </script>
 
@@ -208,19 +194,19 @@
 
     <!-- Inline action rail (§8.4): [XFORM] [CONDENSE] [EXPAND] [MEM-NODE] [REWRITE] -->
     <div class="msg-actions">
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("summarize")}>
+      <button type="button" class="msg-action-btn" onclick={() => handleTransform("summarize")} title="Transform: summarize">
         XFORM
       </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("condense")}>
+      <button type="button" class="msg-action-btn" onclick={() => handleTransform("condense")} title="Transform: condense">
         CONDENSE
       </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("expand")}>
+      <button type="button" class="msg-action-btn" onclick={() => handleTransform("expand")} title="Transform: expand">
         EXPAND
       </button>
-      <button type="button" class="msg-action-btn" onclick={handleMemory}>
+      <button type="button" class="msg-action-btn" onclick={handleMemory} title="Memory: link anchor">
         MEM-NODE
       </button>
-      <button type="button" class="msg-action-btn" onclick={() => handleTransform("rewrite")}>
+      <button type="button" class="msg-action-btn" onclick={() => handleTransform("rewrite")} title="Transform: rewrite">
         REWRITE
       </button>
     </div>
