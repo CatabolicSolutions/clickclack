@@ -51,7 +51,7 @@
     transition: background var(--motion-fast);
   }
   .semantic-margin.inspect {
-    background: rgba(0, 136, 255, 0.04);
+    background: transparent;
   }
   .margin-grid {
     display: grid;

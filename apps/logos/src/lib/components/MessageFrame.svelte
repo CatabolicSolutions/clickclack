@@ -278,7 +278,7 @@
 
   /* ── Intent edge band ── */
   .msg-intent-band {
-    width: 4px;
+    width: 2px;
     min-height: 100%;
     background: var(--intent-color, var(--intent-default));
     flex-shrink: 0;

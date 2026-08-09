@@ -98,8 +98,7 @@
     align-content: start;
     justify-items: center;
     padding: 80px var(--space-4) 0;
-    background: rgba(8, 10, 14, 0.56);
-    backdrop-filter: blur(12px);
+    background: rgba(8, 10, 14, 0.8);
   }
   .palette-bar {
     display: flex;

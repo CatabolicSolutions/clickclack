@@ -749,14 +749,14 @@
   .chip-active { background: color-mix(in srgb, var(--accent-thread) 18%, var(--panel)); color: var(--text-strong); border-color: color-mix(in srgb, var(--accent-thread) 45%, var(--line-strong)); }
   .composer { display: flex; gap: 10px; align-items: flex-end; }
   .composer-input { flex: 1; min-height: 52px; max-height: 160px; resize: vertical; padding: 14px 16px; border-radius: var(--radius-lg); border: 1px solid var(--line-strong); background: var(--panel); color: var(--text-strong); font-size: 15px; line-height: 1.5; }
-  .composer-input:focus { outline: none; border-color: color-mix(in srgb, var(--accent-thread) 60%, var(--line-strong)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-thread) 18%, transparent); }
+  .composer-input:focus { outline: none; border-color: var(--accent-thread); }
   .composer-input::placeholder { color: var(--muted-2); }
   .composer-actions { display: flex; gap: 8px; }
   .btn { font-size: 13px; font-weight: 600; padding: 10px 18px; border-radius: var(--radius); border: 1px solid var(--line-strong); cursor: pointer; transition: all var(--motion-fast); }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-ghost { background: transparent; color: var(--text); }
   .btn-ghost:hover:not(:disabled) { background: var(--hover); }
-  .btn-primary { background: linear-gradient(180deg, color-mix(in srgb, var(--accent-thread) 30%, var(--panel-raised)), color-mix(in srgb, var(--accent-thread) 16%, var(--panel))); color: var(--text-strong); border-color: color-mix(in srgb, var(--accent-thread) 55%, var(--line-strong)); }
+  .btn-primary { background: var(--panel-raised); color: var(--text-strong); border-color: var(--accent-thread); }
   .btn-primary:hover:not(:disabled) { filter: brightness(1.12); }
   .btn-send { min-width: 88px; }
   @media (max-width: 640px) {
