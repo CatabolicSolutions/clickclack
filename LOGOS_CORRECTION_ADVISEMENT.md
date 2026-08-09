@@ -81,7 +81,24 @@ of paint" — which is what Conor rejected. Specifically:
 
 ## 4. What to build (the real scope)
 
-Build the standalone LOGOS experience per `LOGOS_SPEC.md` §8. Priority order:
+Build the standalone LOGOS experience per `LOGOS_SPEC.md` §7 + §8. **§7 is the
+environment spec — the surface the chat service lives in gets the same
+operator-grade treatment; it is not exempt.** Priority order:
+
+0. **Environment (spec §7) — the typewriter-minimal canvas the app lives in:**
+   - Strict black/off-white monochrome, 0px radius, precision grid, no
+     bubbles/emojis/gradients/shadows/consumer embellishments.
+   - Tactile system canvas: telemetry, state inspection, and execution depth
+     embedded in the UI substrate — no conversational follow-up needed.
+   - Sub-surface drill-down: hover/click on any interface object reveals
+     inline split-blade panels (vector distances, confidence weightings,
+     token-level probabilities, model generation parameters).
+   - Live telemetry in-environment: execution stacks, memory-graph citations,
+     intent parser metrics, active state variables on the canvas.
+   - Dynamic message states: intent color band, persona tag, confidence
+     indicator, thread affiliation marker, execution marker.
+   - Non-modal inline utilities: Transform / Summarize / Expand / Thread Link /
+     Memory Link / Persona Switch — inline, zero pop-ups or page transitions.
 
 1. **Operator console shell** — fixed tiled grid, vertical semantic margin
    (1px grid marks, line counters, intent indicators), panels flush against
