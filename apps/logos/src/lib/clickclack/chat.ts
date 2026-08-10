@@ -314,6 +314,33 @@ export async function loadChannels(workspaceId: string): Promise<Channel[]> {
 }
 
 /**
+ * Create a new channel in the active workspace, refresh the channel list,
+ * and select the new channel (mirrors the ClickClack web create flow).
+ * Requires channels:write (Conor owns the workspace).
+ */
+export async function createChannel(name: string): Promise<Channel | null> {
+  const s = get(chatState);
+  const workspaceId = s.activeWorkspaceId;
+  const trimmed = (name || "").trim();
+  if (!workspaceId || !trimmed) return null;
+  try {
+    const data = await api<{ channel: Channel }>(
+      `/api/workspaces/${workspaceId}/channels`,
+      {
+        method: "POST",
+        body: JSON.stringify({ name: trimmed, kind: "public" }),
+      },
+    );
+    await loadChannels(workspaceId);
+    await selectChannel(data.channel.id);
+    return data.channel;
+  } catch (err) {
+    setError("createChannel", err);
+    return null;
+  }
+}
+
+/**
  * Load messages for a channel (latest page). Replaces the current message window.
  */
 export async function loadMessages(

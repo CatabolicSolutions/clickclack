@@ -16,6 +16,7 @@
     selectChannel,
     selectWorkspace,
     sendMessage,
+    createChannel,
     applyMessageUpdate,
   } from "$lib/clickclack/chat";
   import { updateMessageMetadata } from "$lib/clickclack/api";
@@ -41,6 +42,12 @@
   let composerRef: HTMLTextAreaElement | null = $state(null);
   let messageListRef: HTMLDivElement | null = $state(null);
   let inspecting: LogosMessage | null = $state(null);
+
+  // ── Channel creation state ────────────────────────────────────
+
+  let creatingChannel = $state(false);
+  let newChannelName = $state("");
+  let channelCreateError = $state<string | null>(null);
 
   // ── Transform & clarification state ───────────────────────────
 
@@ -233,6 +240,39 @@
 
   function onChannelClick(ch: Channel) {
     selectChannel(ch.id);
+  }
+
+  function onStartCreateChannel() {
+    creatingChannel = true;
+    newChannelName = "";
+    channelCreateError = null;
+  }
+
+  async function onCreateChannelSubmit() {
+    const name = newChannelName.trim();
+    if (!name) {
+      creatingChannel = false;
+      return;
+    }
+    channelCreateError = null;
+    const created = await createChannel(name);
+    if (created) {
+      creatingChannel = false;
+      newChannelName = "";
+    } else {
+      channelCreateError = "Could not create channel — check permissions or try again.";
+    }
+  }
+
+  function onChannelCreateKeydown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      onCreateChannelSubmit();
+    } else if (e.key === "Escape") {
+      creatingChannel = false;
+      newChannelName = "";
+      channelCreateError = null;
+    }
   }
 
   function onWsChange(e: Event) {
@@ -760,7 +800,24 @@
           {#each snapshot.channels as ch (ch.id)}
             <button class="chip" class:chip-active={ch.id === snapshot.activeChannelId} onclick={() => onChannelClick(ch)}># {ch.name}</button>
           {/each}
+          {#if creatingChannel}
+            <input
+              class="chip-input"
+              type="text"
+              placeholder="new-channel-name"
+              aria-label="New channel name"
+              bind:value={newChannelName}
+              onkeydown={onChannelCreateKeydown}
+              onblur={() => { if (!newChannelName.trim()) creatingChannel = false; }}
+              autofocus
+            />
+          {:else}
+            <button class="chip chip-add" aria-label="Create channel" title="Create channel" onclick={onStartCreateChannel}>＋</button>
+          {/if}
         </div>
+        {#if channelCreateError}
+          <div class="channel-create-error">{channelCreateError}</div>
+        {/if}
       </div>
       <div class="composer">
         <textarea bind:this={composerRef} bind:value={composerText} class="composer-input" placeholder="Type a message…" rows={2} onkeydown={onKeyDown}></textarea>
@@ -814,6 +871,10 @@
   .chip { font-size: 12px; padding: 5px 10px; border-radius: var(--radius-pill); border: 1px solid var(--line-strong); background: transparent; color: var(--muted); cursor: pointer; }
   .chip:hover { color: var(--text); }
   .chip-active { background: var(--panel); color: var(--text-strong); border-color: var(--accent-thread); }
+  .chip-add { color: var(--accent-thread); font-weight: 700; padding: 5px 9px; }
+  .chip-add:hover { background: var(--hover-strong); color: var(--text-strong); border-color: var(--accent-thread); }
+  .chip-input { font-size: 12px; padding: 5px 10px; border-radius: var(--radius-pill); border: 1px solid var(--accent-thread); background: var(--panel); color: var(--text-strong); min-width: 150px; outline: none; }
+  .channel-create-error { margin-top: 6px; font-size: 11px; color: var(--accent-intent); }
   .composer { display: flex; gap: 10px; align-items: flex-end; }
   .composer-input { flex: 1; min-height: 52px; max-height: 160px; resize: vertical; padding: 14px 16px; border-radius: var(--radius-lg); border: 1px solid var(--line-strong); background: var(--panel); color: var(--text-strong); font-size: 15px; line-height: 1.5; }
   .composer-input:focus { outline: none; border-color: var(--accent-thread); }
