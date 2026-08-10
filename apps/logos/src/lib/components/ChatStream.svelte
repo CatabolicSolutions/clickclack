@@ -255,12 +255,12 @@
       return;
     }
     channelCreateError = null;
-    const created = await createChannel(name);
-    if (created) {
+    const result = await createChannel(name);
+    if (result.channel) {
       creatingChannel = false;
       newChannelName = "";
     } else {
-      channelCreateError = "Could not create channel — check permissions or try again.";
+      channelCreateError = result.error ?? "Could not create channel — check permissions or try again.";
     }
   }
 

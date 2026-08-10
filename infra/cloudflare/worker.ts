@@ -91,6 +91,15 @@ export default {
       const headers = new Headers(request.headers);
       headers.set("X-Forwarded-Host", incoming.host);
       headers.set("X-Forwarded-Proto", incoming.protocol.replace(":", ""));
+      // PROJECT LOGOS: the API's CSRF check compares the request Origin
+      // against CLICKCLACK_PUBLIC_URL (app.catabolicsolutions.com). LOGOS is
+      // a sibling origin on the same trust domain (cookies already shared via
+      // shareCookieDomain), so normalize Origin on API proxying — otherwise
+      // every mutation (create channel, send message) is rejected as
+      // cross-site. Non-API asset requests don't care about Origin.
+      if (isApi && workerEnv.CLICKCLACK_PUBLIC_URL) {
+        headers.set("Origin", workerEnv.CLICKCLACK_PUBLIC_URL);
+      }
       if (isCognition && workerEnv.CLICKCLACK_COGNITION_TOKEN) {
         headers.set("Authorization", `Bearer ${workerEnv.CLICKCLACK_COGNITION_TOKEN}`);
       }

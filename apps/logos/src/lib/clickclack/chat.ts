@@ -23,6 +23,7 @@ import {
   ensureSession,
   apiURL,
   getSession,
+  readableAPIError,
   updateMessageMetadata,
 } from "./api";
 import { analyze } from "../cognition";
@@ -318,11 +319,11 @@ export async function loadChannels(workspaceId: string): Promise<Channel[]> {
  * and select the new channel (mirrors the ClickClack web create flow).
  * Requires channels:write (Conor owns the workspace).
  */
-export async function createChannel(name: string): Promise<Channel | null> {
+export async function createChannel(name: string): Promise<{ channel: Channel | null; error?: string }> {
   const s = get(chatState);
   const workspaceId = s.activeWorkspaceId;
   const trimmed = (name || "").trim();
-  if (!workspaceId || !trimmed) return null;
+  if (!workspaceId || !trimmed) return { channel: null, error: "No workspace selected — pick a workspace first." };
   try {
     const data = await api<{ channel: Channel }>(
       `/api/workspaces/${workspaceId}/channels`,
@@ -333,10 +334,10 @@ export async function createChannel(name: string): Promise<Channel | null> {
     );
     await loadChannels(workspaceId);
     await selectChannel(data.channel.id);
-    return data.channel;
+    return { channel: data.channel };
   } catch (err) {
     setError("createChannel", err);
-    return null;
+    return { channel: null, error: readableAPIError(err, "Could not create channel — check permissions or try again.") };
   }
 }
 
